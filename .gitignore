@@ -1,0 +1,15 @@
+# Windows metafiles
+Thumbs.db
+
+# Mac metafiles
+._*
+.DS_Store
+
+# Python bytecode
+*.pyc
+*.pyo
+
+# UIUC Image Database for Car Detection
+# The dataset can be download from:
+# http://l2r.cs.uiuc.edu/~cogcomp/Data/Car/CarData.tar.gz
+chapter07/CarData
