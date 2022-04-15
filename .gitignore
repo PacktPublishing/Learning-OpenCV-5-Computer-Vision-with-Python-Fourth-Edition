@@ -9,6 +9,9 @@ Thumbs.db
 *.pyc
 *.pyo
 
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
 # UIUC Image Database for Car Detection
 # The dataset can be download from:
 # http://l2r.cs.uiuc.edu/~cogcomp/Data/Car/CarData.tar.gz
