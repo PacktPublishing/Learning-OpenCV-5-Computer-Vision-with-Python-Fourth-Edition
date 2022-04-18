@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 
 def create_descriptors(folder):
-    feature_detector = cv2.xfeatures2d.SIFT_create()
+    feature_detector = cv2.SIFT_create()
     files = []
     for (dirpath, dirnames, filenames) in os.walk(folder):
         files.extend(filenames)

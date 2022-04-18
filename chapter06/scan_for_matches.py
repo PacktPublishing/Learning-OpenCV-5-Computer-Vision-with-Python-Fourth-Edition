@@ -20,7 +20,7 @@ for (dirpath, dirnames, filenames) in os.walk(folder):
 print(descriptors)
 
 # Create the SIFT detector.
-sift = cv2.xfeatures2d.SIFT_create()
+sift = cv2.SIFT_create()
 
 # Perform SIFT feature detection and description on the
 # query image.
