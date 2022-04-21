@@ -23,5 +23,5 @@ def create_descriptor(folder, image_path, feature_detector):
     descriptor_file = image_path.replace('png', 'npy')
     np.save(os.path.join(folder, descriptor_file), descriptors)
 
-folder = 'tattoos'
+folder = '../images/tattoos'
 create_descriptors(folder)
