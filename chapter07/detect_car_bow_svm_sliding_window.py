@@ -11,16 +11,16 @@ if not os.path.isdir('CarData'):
     exit(1)
 
 BOW_NUM_TRAINING_SAMPLES_PER_CLASS = 10
-SVM_NUM_TRAINING_SAMPLES_PER_CLASS = 100
+SVM_NUM_TRAINING_SAMPLES_PER_CLASS = 110
 
-SVM_SCORE_THRESHOLD = 1.8
-NMS_OVERLAP_THRESHOLD = 0.15
+SVM_SCORE_THRESHOLD = 2.2
+NMS_OVERLAP_THRESHOLD = 0.4
 
 sift = cv2.SIFT_create()
 
 FLANN_INDEX_KDTREE = 1
 index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-search_params = {}
+search_params = dict(checks=50)
 flann = cv2.FlannBasedMatcher(index_params, search_params)
 
 bow_kmeans_trainer = cv2.BOWKMeansTrainer(12)
@@ -70,8 +70,8 @@ svm.setC(50)
 svm.train(np.array(training_data), cv2.ml.ROW_SAMPLE,
           np.array(training_labels))
 
-def pyramid(img, scale_factor=1.25, min_size=(200, 80),
-            max_size=(600, 600)):
+def pyramid(img, scale_factor=1.05, min_size=(100, 40),
+            max_size=(600, 240)):
     h, w = img.shape
     min_w, min_h = min_size
     max_w, max_h = max_size
