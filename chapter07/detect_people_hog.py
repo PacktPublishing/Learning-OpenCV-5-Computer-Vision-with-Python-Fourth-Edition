@@ -32,5 +32,5 @@ for ri, r in enumerate(found_rects_filtered):
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
 cv2.imshow('Women in Hayfield Detected', img)
-cv2.imwrite('./women_in_hayfield_detected.jpg', img)
+cv2.imwrite('./women_in_hayfield_detected.png', img)
 cv2.waitKey(0)
