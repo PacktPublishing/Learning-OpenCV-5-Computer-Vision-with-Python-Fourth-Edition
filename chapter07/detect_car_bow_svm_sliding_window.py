@@ -13,6 +13,7 @@ if not os.path.isdir('CarData'):
 BOW_NUM_TRAINING_SAMPLES_PER_CLASS = 10
 SVM_NUM_TRAINING_SAMPLES_PER_CLASS = 110
 
+BOW_NUM_CLUSTERS = 12
 SVM_SCORE_THRESHOLD = 2.2
 NMS_OVERLAP_THRESHOLD = 0.4
 
@@ -23,7 +24,7 @@ index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
 search_params = dict(checks=50)
 flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-bow_kmeans_trainer = cv2.BOWKMeansTrainer(12)
+bow_kmeans_trainer = cv2.BOWKMeansTrainer(BOW_NUM_CLUSTERS)
 bow_extractor = cv2.BOWImgDescriptorExtractor(sift, flann)
 
 def get_pos_and_neg_paths(i):

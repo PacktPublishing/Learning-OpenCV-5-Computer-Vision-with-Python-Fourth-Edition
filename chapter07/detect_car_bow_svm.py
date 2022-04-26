@@ -11,6 +11,8 @@ if not os.path.isdir('CarData'):
 BOW_NUM_TRAINING_SAMPLES_PER_CLASS = 10
 SVM_NUM_TRAINING_SAMPLES_PER_CLASS = 110
 
+BOW_NUM_CLUSTERS = 40
+
 sift = cv2.SIFT_create()
 
 FLANN_INDEX_KDTREE = 1
@@ -18,7 +20,7 @@ index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
 search_params = dict(checks=50)
 flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-bow_kmeans_trainer = cv2.BOWKMeansTrainer(40)
+bow_kmeans_trainer = cv2.BOWKMeansTrainer(BOW_NUM_CLUSTERS)
 bow_extractor = cv2.BOWImgDescriptorExtractor(sift, flann)
 
 def get_pos_and_neg_paths(i):
