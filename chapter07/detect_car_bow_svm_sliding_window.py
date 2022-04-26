@@ -2,7 +2,10 @@ import cv2
 import numpy as np
 import os
 
-from non_max_suppression import non_max_suppression_fast as nms
+# When running in Jupyter, the `non_max_suppression_fast` function should
+# already be in the global scope. Otherwise, import it now.
+if 'non_max_suppression_fast' not in globals():
+    from non_max_suppression import non_max_suppression_fast
 
 if not os.path.isdir('CarData'):
     print('CarData folder not found. Please download and unzip '
@@ -121,7 +124,8 @@ for test_img_path in ['CarData/TestImages/test-0.pgm',
                                       int((x+w) * scale),
                                       int((y+h) * scale),
                                       score])
-    pos_rects = nms(np.array(pos_rects), NMS_OVERLAP_THRESHOLD)
+    pos_rects = non_max_suppression_fast(
+        np.array(pos_rects), NMS_OVERLAP_THRESHOLD)
     for x0, y0, x1, y1, score in pos_rects:
         cv2.rectangle(img, (int(x0), int(y0)), (int(x1), int(y1)),
                       (0, 255, 255), 2)
