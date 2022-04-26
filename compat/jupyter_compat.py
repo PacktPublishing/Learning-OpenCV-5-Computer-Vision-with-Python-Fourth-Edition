@@ -36,5 +36,9 @@ def cv2_imread(filename, flags=cv2.IMREAD_COLOR):
         image = cv2.imdecode(image, flags)
     return image
 
-cv2._imread = cv2.imread
+# Cache the original implementation of `imread`, if we have not already
+# done so on a previous run of this cell.
+if '_imread' not in dir(cv2):
+    cv2._imread = cv2.imread
+
 cv2.imread = cv2_imread
