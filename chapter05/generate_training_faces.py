@@ -2,7 +2,7 @@ import cv2
 import os
 
 
-output_folder = '../data/at/jm'
+output_folder = '../data/at/my_name'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
