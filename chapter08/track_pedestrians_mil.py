@@ -31,7 +31,7 @@ class Pedestrian():
 
 def main():
 
-    cap = cv2.VideoCapture('pedestrians.avi')
+    cap = cv2.VideoCapture('../videos/pedestrians.avi')
 
     # Create the KNN background subtractor.
     bg_subtractor = cv2.createBackgroundSubtractorKNN()
