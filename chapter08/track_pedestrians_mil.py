@@ -4,8 +4,8 @@ import numpy as np
 OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
 
 class Pedestrian():
-    """A tracked pedestrian with a state including an ID, tracking
-    window, histogram, and Kalman filter.
+    """A tracked pedestrian with a state including an ID and a
+    MIL tracker.
     """
 
     def __init__(self, id, frame, track_window):
@@ -47,7 +47,7 @@ def main():
     num_history_frames_populated = 0
     while True:
         grabbed, frame = cap.read()
-        if (grabbed is False):
+        if not grabbed:
             break
 
         # Apply the KNN background subtractor.
