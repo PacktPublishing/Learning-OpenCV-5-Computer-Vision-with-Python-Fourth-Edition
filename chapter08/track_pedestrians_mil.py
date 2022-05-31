@@ -13,7 +13,11 @@ class Pedestrian():
         self.id = id
 
         # Initialize the MIL tracker.
-        self.tracker = cv2.TrackerMIL_create()
+        tracker_params = cv2.TrackerMIL_Params()
+        tracker_params.samplerInitMaxNegNum = 100
+        tracker_params.samplerSearchWinSize = 30.0
+        tracker_params.samplerTrackMaxNegNum = 100
+        self.tracker = cv2.TrackerMIL_create(tracker_params)
         self.tracker.init(frame, track_window)
 
     def update(self, frame):
