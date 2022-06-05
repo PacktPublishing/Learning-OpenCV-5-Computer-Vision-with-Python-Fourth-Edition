@@ -8,20 +8,20 @@ def is_inside(i, o):
     return ix > ox and ix + iw < ox + ow and \
         iy > oy and iy + ih < oy + oh
 
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+hog = cv2.HOGDescriptor((48, 96), (16, 16), (8, 8), (8, 8), 9)
+hog.setSVMDetector(cv2.HOGDescriptor_getDaimlerPeopleDetector())
 
 img = cv2.imread('../images/haying.jpg')
 
 if OPENCV_MAJOR_VERSION >= 5:
     # OpenCV 5 or a later version is being used.
     found_rects, found_weights = hog.detectMultiScale(
-        img, winStride=(4, 4), scale=1.02, groupThreshold=1.9)
+        img, winStride=(8, 8), scale=1.04, groupThreshold=6.0)
 else:
     # OpenCV 4 or an earlier version is being used.
     # The groupThreshold parameter used to be named finalThreshold.
     found_rects, found_weights = hog.detectMultiScale(
-        img, winStride=(4, 4), scale=1.02, finalThreshold=1.9)
+        img, winStride=(8, 8), scale=1.04, finalThreshold=6.0)
 
 found_rects_filtered = []
 found_weights_filtered = []
@@ -41,5 +41,5 @@ for ri, r in enumerate(found_rects_filtered):
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
 cv2.imshow('Women in Hayfield Detected', img)
-cv2.imwrite('./women_in_hayfield_detected.png', img)
+cv2.imwrite('./women_in_hayfield_detected_daimler.png', img)
 cv2.waitKey(0)
