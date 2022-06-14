@@ -1,6 +1,7 @@
 import cv2
 
 OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
+OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[1])
 
 def is_inside(i, o):
     ix, iy, iw, ih = i
@@ -13,12 +14,13 @@ hog.setSVMDetector(cv2.HOGDescriptor_getDaimlerPeopleDetector())
 
 img = cv2.imread('../images/haying.jpg')
 
-if OPENCV_MAJOR_VERSION >= 5:
-    # OpenCV 5 or a later version is being used.
+if OPENCV_MAJOR_VERSION >= 5 or \
+        (OPENCV_MAJOR_VERSION == 4 and OPENCV_MINOR_VERSION >= 6):
+    # OpenCV 4.6 or a later version is being used.
     found_rects, found_weights = hog.detectMultiScale(
         img, winStride=(8, 8), scale=1.04, groupThreshold=6.0)
 else:
-    # OpenCV 4 or an earlier version is being used.
+    # OpenCV 4.5 or an earlier version is being used.
     # The groupThreshold parameter used to be named finalThreshold.
     found_rects, found_weights = hog.detectMultiScale(
         img, winStride=(8, 8), scale=1.04, finalThreshold=6.0)

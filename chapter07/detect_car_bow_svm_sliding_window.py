@@ -71,6 +71,7 @@ for i in range(SVM_NUM_TRAINING_SAMPLES_PER_CLASS):
 svm = cv2.ml.SVM_create()
 svm.setType(cv2.ml.SVM_C_SVC)
 svm.setC(50)
+
 svm.train(np.array(training_data), cv2.ml.ROW_SAMPLE,
           np.array(training_labels))
 
