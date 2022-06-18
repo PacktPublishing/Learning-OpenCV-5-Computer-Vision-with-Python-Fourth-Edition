@@ -9,7 +9,7 @@ https://github.com/JoeHowse/VisualizingTheInvisible
 
 The project is open-source under the BSD 3-Clause License, as follows.
 
-Copyright (c) 2018, Nummist Media Corporation Limited
+Copyright (c) 2018-2022, Nummist Media Corporation Limited
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -114,8 +114,12 @@ class ImageTrackingDemo():
 
         self._distortion_coefficients = None
 
-        self._rotation_vector = None
-        self._translation_vector = None
+        self._rodrigues_rotation_vector = numpy.array(
+            [[0.0], [0.0], [1.0]], numpy.float32)
+        self._euler_rotation_vector = numpy.zeros((3, 1), numpy.float32)  # Radians
+        self._rotation_matrix = numpy.zeros((3, 3), numpy.float64)
+
+        self._translation_vector = numpy.zeros((3, 1), numpy.float32)
 
         self._kalman = cv2.KalmanFilter(18, 6)
 
@@ -295,7 +299,7 @@ class ImageTrackingDemo():
         good_matches = [
             match[0] for match in matches
             if len(match) > 1 and \
-        		match[0].distance < 0.6 * match[1].distance
+                match[0].distance < 0.8 * match[1].distance
         ]
 
         # Select the good keypoints and draw them in red.
@@ -330,13 +334,12 @@ class ImageTrackingDemo():
                 numpy.float32)
 
             # Solve for the pose and find the inlier indices.
-            (success, self._rotation_vector,
-             self._translation_vector, inlier_indices) = \
+            (success, rodrigues_rotation_vector_temp,
+             translation_vector_temp, inlier_indices) = \
                 cv2.solvePnPRansac(good_points_3D, good_points_2D,
                                    self._camera_matrix,
                                    self._distortion_coefficients,
-                                   self._rotation_vector,
-                                   self._translation_vector,
+                                   None, None,
                                    useExtrinsicGuess=False,
                                    iterationsCount=100,
                                    reprojectionError=8.0,
@@ -345,9 +348,14 @@ class ImageTrackingDemo():
 
             if success:
 
+                self._translation_vector[:] = translation_vector_temp
+                self._rodrigues_rotation_vector[:] = \
+                    rodrigues_rotation_vector_temp
+                self._convert_rodrigues_to_euler()
+
                 if not self._was_tracking:
                     self._init_kalman_state_matrices()
-                self._was_tracking = True
+                    self._was_tracking = True
 
                 self._apply_kalman()
 
@@ -420,7 +428,7 @@ class ImageTrackingDemo():
     def _init_kalman_state_matrices(self):
 
         t_x, t_y, t_z = self._translation_vector.flat
-        r_x, r_y, r_z = self._rotation_vector.flat
+        r_x, r_y, r_z = self._euler_rotation_vector.flat
 
         self._kalman.statePre = numpy.array(
             [[t_x], [t_y], [t_z],
@@ -443,20 +451,119 @@ class ImageTrackingDemo():
         self._kalman.predict()
 
         t_x, t_y, t_z = self._translation_vector.flat
-        r_x, r_y, r_z = self._rotation_vector.flat
+        r_x, r_y, r_z = self._euler_rotation_vector.flat
 
         estimate = self._kalman.correct(numpy.array(
             [[t_x], [t_y], [t_z],
              [r_x], [r_y], [r_z]], numpy.float32))
 
-        self._translation_vector = estimate[0:3]
-        self._rotation_vector = estimate[9:12]
+        translation_estimate = estimate[0:3]
+        euler_rotation_estimate = estimate[9:12]
+
+        self._translation_vector[:] = translation_estimate
+
+        angular_delta = cv2.norm(self._euler_rotation_vector,
+                                 euler_rotation_estimate, cv2.NORM_L2)
+
+        MAX_ANGULAR_DELTA = 30.0 * math.pi / 180.0
+        if angular_delta > MAX_ANGULAR_DELTA:
+            # The rotational motion stabilization seems to be drifting
+            # too far, probably due to an Euler angle singularity.
+
+            # Reset the rotational motion stabilization.
+            # Let the translational motion stabilization continue as-is.
+
+            self._kalman.statePre[9] = r_x
+            self._kalman.statePre[10] = r_y
+            self._kalman.statePre[11] = r_z
+            self._kalman.statePre[12:18] = 0.0
+
+            self._kalman.statePost[9] = r_x
+            self._kalman.statePost[10] = r_y
+            self._kalman.statePost[11] = r_z
+            self._kalman.statePost[12:18] = 0.0
+        else:
+            self._euler_rotation_vector[:] = euler_rotation_estimate
+            self._convert_euler_to_rodrigues()
+
+
+    def _convert_rodrigues_to_euler(self):
+
+        self._rotation_matrix, jacobian = cv2.Rodrigues(
+            self._rodrigues_rotation_vector, self._rotation_matrix)
+
+        m00 = self._rotation_matrix[0, 0]
+        m02 = self._rotation_matrix[0, 2]
+        m10 = self._rotation_matrix[1, 0]
+        m11 = self._rotation_matrix[1, 1]
+        m12 = self._rotation_matrix[1, 2]
+        m20 = self._rotation_matrix[2, 0]
+        m22 = self._rotation_matrix[2, 2]
+
+        # Convert to Euler angles using the Y-Z-X Tait-Bryan convention.
+        if m10 > 0.998:
+            # The rotation is near the singularity at the North pole.
+            pitch = 0.5 * math.pi
+            yaw = math.atan2(m02, m22)
+            roll = 0.0
+        elif m10 < -0.998:
+            # The rotation is near the singularity at the South pole.
+            pitch = -0.5 * math.pi
+            yaw = math.atan2(m02, m22)
+            roll = 0.0
+        else:
+            pitch = math.asin(m10)
+            yaw = math.atan2(-m20, m00)
+            roll = math.atan2(-m12, m11)
+
+        self._euler_rotation_vector[0] = pitch
+        self._euler_rotation_vector[1] = yaw
+        self._euler_rotation_vector[2] = roll
+
+
+    def _convert_euler_to_rodrigues(self):
+
+        pitch = self._euler_rotation_vector[0]
+        yaw = self._euler_rotation_vector[1]
+        roll = self._euler_rotation_vector[2]
+
+        cyaw = math.cos(yaw)
+        syaw = math.sin(yaw)
+        cpitch = math.cos(pitch)
+        spitch = math.sin(pitch)
+        croll = math.cos(roll)
+        sroll = math.sin(roll)
+
+        # Convert from Euler angles using the Y-Z-X Tait-Bryan convention.
+        m00 = cyaw * cpitch
+        m01 = syaw * sroll - cyaw * spitch * croll
+        m02 = cyaw * spitch * sroll + syaw * croll
+        m10 = spitch
+        m11 = cpitch * croll
+        m12 = -cpitch * sroll
+        m20 = -syaw * cpitch
+        m21 = syaw * spitch * croll + cyaw * sroll
+        m22 = -syaw * spitch * sroll + cyaw * croll
+
+        self._rotation_matrix[0, 0] = m00
+        self._rotation_matrix[0, 1] = m01
+        self._rotation_matrix[0, 2] = m02
+        self._rotation_matrix[1, 0] = m10
+        self._rotation_matrix[1, 1] = m11
+        self._rotation_matrix[1, 2] = m12
+        self._rotation_matrix[2, 0] = m20
+        self._rotation_matrix[2, 1] = m21
+        self._rotation_matrix[2, 2] = m22
+
+        self._rodrigues_rotation_vector, jacobian = cv2.Rodrigues(
+            self._rotation_matrix, self._rodrigues_rotation_vector)
 
 
     def _draw_object_axes(self):
 
         points_2D, jacobian = cv2.projectPoints(
-            self._reference_axis_points_3D, self._rotation_vector,
+            self._reference_axis_points_3D,
+            self._rodrigues_rotation_vector,
             self._translation_vector, self._camera_matrix,
             self._distortion_coefficients)
 
@@ -480,7 +587,8 @@ class ImageTrackingDemo():
 
         # Project the object's vertices into the scene.
         vertices_2D, jacobian = cv2.projectPoints(
-            self._reference_vertices_3D, self._rotation_vector,
+            self._reference_vertices_3D,
+            self._rodrigues_rotation_vector,
             self._translation_vector, self._camera_matrix,
             self._distortion_coefficients)
         vertices_2D = vertices_2D.astype(numpy.int32)
