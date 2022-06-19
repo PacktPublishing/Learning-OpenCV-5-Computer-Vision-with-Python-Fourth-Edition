@@ -11,7 +11,7 @@ if not os.path.isdir('CarData'):
           'into the same folder as this script.')
     exit(1)
 
-HOG_WINDOW_SIZE = (96, 48)
+HOG_WINDOW_SIZE = (96, 40)
 HOG_WEIGHT_THRESHOLD = 0.45
 
 SVM_NUM_TRAINING_SAMPLES_PER_CLASS = 300
