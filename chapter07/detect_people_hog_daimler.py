@@ -1,7 +1,7 @@
 import cv2
 
 OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
-OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[1])
+OPENCV_MINOR_VERSION = int(cv2.__version__.split('.')[1])
 
 def is_inside(i, o):
     ix, iy, iw, ih = i
