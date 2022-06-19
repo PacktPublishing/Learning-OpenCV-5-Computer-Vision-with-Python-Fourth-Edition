@@ -500,14 +500,15 @@ class ImageTrackingDemo():
         m20 = self._rotation_matrix[2, 0]
         m22 = self._rotation_matrix[2, 2]
 
-        # Convert to Euler angles using the Y-Z-X Tait-Bryan convention.
+        # Convert to Euler angles using the yaw-pitch-roll
+        # Tait-Bryan convention.
         if m10 > 0.998:
-            # The rotation is near the singularity at the North pole.
+            # The rotation is near the "vertical climb" singularity.
             pitch = 0.5 * math.pi
             yaw = math.atan2(m02, m22)
             roll = 0.0
         elif m10 < -0.998:
-            # The rotation is near the singularity at the South pole.
+            # The rotation is near the "nose dive" singularity.
             pitch = -0.5 * math.pi
             yaw = math.atan2(m02, m22)
             roll = 0.0
@@ -534,7 +535,8 @@ class ImageTrackingDemo():
         croll = math.cos(roll)
         sroll = math.sin(roll)
 
-        # Convert from Euler angles using the Y-Z-X Tait-Bryan convention.
+        # Convert from Euler angles using the yaw-pitch-roll
+        # Tait-Bryan convention.
         m00 = cyaw * cpitch
         m01 = syaw * sroll - cyaw * spitch * croll
         m02 = cyaw * spitch * sroll + syaw * croll
