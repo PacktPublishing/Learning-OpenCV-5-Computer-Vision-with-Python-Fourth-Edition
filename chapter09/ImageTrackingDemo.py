@@ -428,22 +428,22 @@ class ImageTrackingDemo():
     def _init_kalman_state_matrices(self):
 
         t_x, t_y, t_z = self._translation_vector.flat
-        r_x, r_y, r_z = self._euler_rotation_vector.flat
+        pitch, yaw, roll = self._euler_rotation_vector.flat
 
         self._kalman.statePre = numpy.array(
-            [[t_x], [t_y], [t_z],
-             [0.0], [0.0], [0.0],
-             [0.0], [0.0], [0.0],
-             [r_x], [r_y], [r_z],
-             [0.0], [0.0], [0.0],
-             [0.0], [0.0], [0.0]], numpy.float32)
+            [[t_x],   [t_y],  [t_z],
+             [0.0],   [0.0],  [0.0],
+             [0.0],   [0.0],  [0.0],
+             [pitch], [yaw],  [roll],
+             [0.0],   [0.0],  [0.0],
+             [0.0],   [0.0],  [0.0]], numpy.float32)
         self._kalman.statePost = numpy.array(
-            [[t_x], [t_y], [t_z],
-             [0.0], [0.0], [0.0],
-             [0.0], [0.0], [0.0],
-             [r_x], [r_y], [r_z],
-             [0.0], [0.0], [0.0],
-             [0.0], [0.0], [0.0]], numpy.float32)
+            [[t_x],   [t_y],  [t_z],
+             [0.0],   [0.0],  [0.0],
+             [0.0],   [0.0],  [0.0],
+             [pitch], [yaw],  [roll],
+             [0.0],   [0.0],  [0.0],
+             [0.0],   [0.0],  [0.0]], numpy.float32)
 
 
     def _apply_kalman(self):
@@ -451,11 +451,11 @@ class ImageTrackingDemo():
         self._kalman.predict()
 
         t_x, t_y, t_z = self._translation_vector.flat
-        r_x, r_y, r_z = self._euler_rotation_vector.flat
+        pitch, yaw, roll = self._euler_rotation_vector.flat
 
         estimate = self._kalman.correct(numpy.array(
-            [[t_x], [t_y], [t_z],
-             [r_x], [r_y], [r_z]], numpy.float32))
+            [[t_x],   [t_y], [t_z],
+             [pitch], [yaw], [roll]], numpy.float32))
 
         translation_estimate = estimate[0:3]
         euler_rotation_estimate = estimate[9:12]
@@ -473,14 +473,14 @@ class ImageTrackingDemo():
             # Reset the rotational motion stabilization.
             # Let the translational motion stabilization continue as-is.
 
-            self._kalman.statePre[9] = r_x
-            self._kalman.statePre[10] = r_y
-            self._kalman.statePre[11] = r_z
+            self._kalman.statePre[9] = pitch
+            self._kalman.statePre[10] = yaw
+            self._kalman.statePre[11] = roll
             self._kalman.statePre[12:18] = 0.0
 
-            self._kalman.statePost[9] = r_x
-            self._kalman.statePost[10] = r_y
-            self._kalman.statePost[11] = r_z
+            self._kalman.statePost[9] = pitch
+            self._kalman.statePost[10] = yaw
+            self._kalman.statePost[11] = roll
             self._kalman.statePost[12:18] = 0.0
         else:
             self._euler_rotation_vector[:] = euler_rotation_estimate
