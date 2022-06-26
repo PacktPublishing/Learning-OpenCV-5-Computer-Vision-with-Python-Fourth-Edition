@@ -19,8 +19,8 @@ class Pedestrian():
         # Initialize the histogram.
         x, y, w, h = track_window
         roi = hsv_frame[y:y+h, x:x+w]
-        roi_hist = cv2.calcHist([roi], [0, 2], None, [16, 16],
-                                [0, 180, 0, 255])
+        roi_hist = cv2.calcHist([roi], [0, 2], None, [15, 16],
+                                [0, 180, 0, 256])
         self.roi_hist = cv2.normalize(roi_hist, roi_hist, 0, 255,
                                       cv2.NORM_MINMAX)
 
@@ -49,7 +49,7 @@ class Pedestrian():
     def update(self, frame, hsv_frame):
 
         back_proj = cv2.calcBackProject(
-            [hsv_frame], [0, 2], self.roi_hist, [0, 180, 0, 255], 1)
+            [hsv_frame], [0, 2], self.roi_hist, [0, 180, 0, 256], 1)
 
         ret, self.track_window = cv2.meanShift(
             back_proj, self.track_window, self.term_crit)
