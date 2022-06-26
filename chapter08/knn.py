@@ -36,6 +36,8 @@ while success:
 
     cv2.imshow('knn', fg_mask)
     cv2.imshow('thresh', thresh)
+    cv2.imshow('background',
+               bg_subtractor.getBackgroundImage())
     cv2.imshow('detection', frame)
 
     k = cv2.waitKey(30)

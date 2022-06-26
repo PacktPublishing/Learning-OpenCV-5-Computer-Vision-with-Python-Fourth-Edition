@@ -45,7 +45,7 @@ def main():
     erode_kernel = cv2.getStructuringElement(
         cv2.MORPH_ELLIPSE, (3, 3))
     dilate_kernel = cv2.getStructuringElement(
-        cv2.MORPH_ELLIPSE, (8, 3))
+        cv2.MORPH_ELLIPSE, (5, 7))
 
     pedestrians = []
     num_history_frames_populated = 0
