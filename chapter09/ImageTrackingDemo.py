@@ -575,14 +575,16 @@ class ImageTrackingDemo():
         forward = (int(points_2D[3, 0, 0]), int(points_2D[3, 0, 1]))
 
         # Draw the X axis in red.
-        cv2.arrowedLine(self._bgr_image, origin, right, (0, 0, 255))
+        cv2.arrowedLine(
+            self._bgr_image, origin, right, (0, 0, 255), 2)
 
         # Draw the Y axis in green.
-        cv2.arrowedLine(self._bgr_image, origin, up, (0, 255, 0))
+        cv2.arrowedLine(
+            self._bgr_image, origin, up, (0, 255, 0), 2)
 
         # Draw the Z axis in blue.
         cv2.arrowedLine(
-            self._bgr_image, origin, forward, (255, 0, 0))
+            self._bgr_image, origin, forward, (255, 0, 0), 2)
 
 
     def _make_and_draw_object_mask(self):
