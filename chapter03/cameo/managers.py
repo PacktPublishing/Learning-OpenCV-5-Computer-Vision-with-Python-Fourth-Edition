@@ -70,9 +70,9 @@ class CaptureManager(object):
 
         # Update the FPS estimate and related variables.
         if self._framesElapsed == 0:
-            self._startTime = time.time()
+            self._startTime = time.perf_counter()
         else:
-            timeElapsed = time.time() - self._startTime
+            timeElapsed = time.perf_counter() - self._startTime
             self._fpsEstimate =  self._framesElapsed / timeElapsed
         self._framesElapsed += 1
 
