@@ -3,7 +3,7 @@ import numpy as np
 
 OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
 
-img = cv2.pyrDown(cv2.imread("hammer.jpg", cv2.IMREAD_UNCHANGED))
+img = cv2.pyrDown(cv2.imread("../images/hammer.jpg"))
 
 ret, thresh = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY),
                             127, 255, cv2.THRESH_BINARY)
@@ -32,7 +32,7 @@ for c in contours:
     # normalize coordinates to integers
     box = np.int0(box)
     # draw contours
-    cv2.drawContours(img, [box], 0, (0,0, 255), 3)
+    cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
 
     # calculate center and radius of minimum enclosing circle
     (x, y), radius = cv2.minEnclosingCircle(c)

@@ -12,7 +12,8 @@ kernel_5x5 = np.array([[-1, -1, -1, -1, -1],
                        [-1,  1,  2,  1, -1],
                        [-1, -1, -1, -1, -1]])
 
-img = cv2.imread("../images/statue_small.jpg", 0)
+img = cv2.imread("../images/statue_small.jpg",
+                 cv2.IMREAD_GRAYSCALE)
 
 k3 = ndimage.convolve(img, kernel_3x3)
 k5 = ndimage.convolve(img, kernel_5x5)

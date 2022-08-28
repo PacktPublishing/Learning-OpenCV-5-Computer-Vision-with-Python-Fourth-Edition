@@ -3,7 +3,7 @@ import numpy as np
 
 OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
 
-img = cv2.pyrDown(cv2.imread("hammer.jpg", cv2.IMREAD_UNCHANGED))
+img = cv2.pyrDown(cv2.imread("../images/hammer.jpg"))
 
 ret, thresh = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY),
                             127, 255, cv2.THRESH_BINARY)
