@@ -120,7 +120,7 @@ class CaptureManager(object):
 
         if self._videoWriter is None:
             fps = self._capture.get(cv2.CAP_PROP_FPS)
-            if fps <= 0.0:
+            if numpy.isnan(fps) or fps <= 0.0:
                 # The capture's FPS is unknown so use an estimate.
                 if self._framesElapsed < 20:
                     # Wait until more frames elapse so that the
