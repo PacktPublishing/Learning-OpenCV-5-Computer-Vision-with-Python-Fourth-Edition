@@ -9,17 +9,18 @@ circles = cv2.HoughCircles(gray_img, cv2.HOUGH_GRADIENT,
                            1, 120, param1=90, param2=40,
                            minRadius=0, maxRadius=0)
 
-circles = np.uint16(np.around(circles))
+if circles is not None:
+    circles = np.uint16(np.around(circles))
 
-for i in circles[0,:]:
-    # draw the outer circle
-    cv2.circle(planets, (i[0], i[1]), i[2],
-               (0, 255, 0), 2)
-    # draw the center of the circle
-    cv2.circle(planets, (i[0], i[1]), 2,
-               (0, 0, 255), 3)
+    for i in circles[0,:]:
+        # draw the outer circle
+        cv2.circle(planets, (i[0], i[1]), i[2],
+                   (0, 255, 0), 2)
+        # draw the center of the circle
+        cv2.circle(planets, (i[0], i[1]), 2,
+                   (0, 0, 255), 3)
 
 cv2.imwrite("planets_circles.jpg", planets)
-cv2.imshow("HoughCirlces", planets)
+cv2.imshow("HoughCircles", planets)
 cv2.waitKey()
 cv2.destroyAllWindows()
