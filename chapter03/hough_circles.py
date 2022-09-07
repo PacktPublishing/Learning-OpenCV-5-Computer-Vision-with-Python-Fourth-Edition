@@ -20,7 +20,7 @@ if circles is not None:
         cv2.circle(planets, (i[0], i[1]), 2,
                    (0, 0, 255), 3)
 
-cv2.imwrite("planets_circles.jpg", planets)
+cv2.imwrite("planets_hough_circles.jpg", planets)
 cv2.imshow("HoughCircles", planets)
 cv2.waitKey()
 cv2.destroyAllWindows()
