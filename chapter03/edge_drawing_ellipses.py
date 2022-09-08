@@ -30,16 +30,17 @@ for segment in segments:
 
 # Draw the detected circles and ellipses.
 if ellipses is not None:
-    ellipses = np.uint16(np.around(ellipses))
     for ellipse in ellipses:
+        center = (int(ellipse[0][0]), int(ellipse[0][1]))
+        axes = (int(ellipse[0][2] + ellipse[0][3]),
+                int(ellipse[0][2] + ellipse[0][4]))
+        angle = ellipse[0][5]
         if ellipse[0][2] == 0:  # Ellipse
             color = (0, 0, 255)
         else:  # Circle
             color = (0, 255, 0)
-        cv2.ellipse(
-            ellipses_viz, (ellipse[0][0], ellipse[0][1]),
-            (ellipse[0][2]+ellipse[0][3], ellipse[0][2]+ellipse[0][4]),
-            ellipse[0][5], 0, 360, color, 2, cv2.LINE_AA)
+        cv2.ellipse(ellipses_viz, center, axes, angle, 0, 360,
+                    color, 2, cv2.LINE_AA)
 
 cv2.imwrite("planets_edge_drawing_segments.jpg", segments_viz)
 cv2.imwrite("planets_edge_drawing_ellipses.jpg", ellipses_viz)
