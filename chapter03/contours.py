@@ -4,7 +4,7 @@ import numpy as np
 OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
 
 img = np.zeros((200, 200), dtype=np.uint8)
-img[50:150, 50:150] = 255
+img[70:130, 70:130] = 128
 
 ret, thresh = cv2.threshold(img, 127, 255, 0)
 
