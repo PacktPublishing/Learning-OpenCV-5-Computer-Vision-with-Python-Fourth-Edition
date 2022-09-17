@@ -15,8 +15,9 @@ if OPENCV_MAJOR_VERSION >= 4:
 else:
     # OpenCV 3 or an earlier version is being used.
     # cv2.findContours has an extra return value.
-    # The extra return value is the thresholded image, which is
-    # unchanged, so we can ignore it.
+    # The extra return value is the thresholded image, which (in
+    # OpenCV 3.1 or an earlier version) may have been modified, but
+    # we can ignore it.
     _, contours, hier = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
                                          cv2.CHAIN_APPROX_SIMPLE)
 

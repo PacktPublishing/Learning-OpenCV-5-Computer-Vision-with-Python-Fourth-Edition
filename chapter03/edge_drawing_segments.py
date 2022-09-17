@@ -8,7 +8,7 @@ img = cv2.imread("../images/statue_small.jpg",
                  cv2.IMREAD_GRAYSCALE)
 
 h, w = img.shape
-viz = np.empty((h, w, 3), dtype=np.uint8)
+viz = np.zeros((h, w, 3), dtype=np.uint8)
 
 edge_drawing = cv2.ximgproc.createEdgeDrawing()
 
