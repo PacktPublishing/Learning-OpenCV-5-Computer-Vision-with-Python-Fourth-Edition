@@ -47,6 +47,11 @@ depth.setSubpixel(False)
 
 ####
 
+# Link the nodes in the mono -> stereo -> output chain.
+monoLeft.out.link(depth.left)
+monoRight.out.link(depth.right)
+depth.disparity.link(disparityOut.input)
+
 
 # Define the nodes in the RGB chain.
 rgb = pipeline.create(dai.node.ColorCamera)
@@ -58,12 +63,6 @@ rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
 rgb.setResolution(
     dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 rgb.setVideoSize(1920, 1080)
-
-
-# Link the nodes in the mono -> stereo -> output chain.
-monoLeft.out.link(depth.left)
-monoRight.out.link(depth.right)
-depth.disparity.link(disparityOut.input)
 
 # Link the nodes in the RGB -> output chain.
 rgb.video.link(rgbOut.input)
