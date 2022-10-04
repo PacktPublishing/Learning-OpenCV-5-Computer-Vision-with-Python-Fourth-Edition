@@ -46,13 +46,13 @@ import cv2
 import numpy
 
 
-def convert_to_gray(src, dst=None):
+def convert_bgr_to_gray(src, dst=None):
     weight = 1.0 / 3.0
     m = numpy.array([[weight, weight, weight]], numpy.float32)
     return cv2.transform(src, m, dst)
 
 
-def map_point_onto_plane(point_2D, image_size, image_scale):
+def map_2D_point_onto_3D_plane(point_2D, image_size, image_scale):
     x, y = point_2D
     w, h = image_size
     return (image_scale * (x - 0.5 * w),
@@ -60,12 +60,13 @@ def map_point_onto_plane(point_2D, image_size, image_scale):
             0.0)
 
 
-def map_points_to_plane(points_2D, image_size, image_real_height):
+def map_2D_points_onto_3D_plane(points_2D, image_size,
+                                image_real_height):
 
     w, h = image_size
     image_scale = image_real_height / h
 
-    points_3D = [map_point_onto_plane(
+    points_3D = [map_2D_point_onto_3D_plane(
                      point_2D, image_size, image_scale)
                  for point_2D in points_2D]
     return numpy.array(points_3D, numpy.float32)
@@ -78,7 +79,7 @@ def map_vertices_to_plane(image_size, image_real_height):
     vertices_2D = [(0, 0), (w, 0), (w, h), (0, h)]
     vertex_indices_by_face = [[0, 1, 2, 3]]
 
-    vertices_3D = map_points_to_plane(
+    vertices_3D = map_2D_points_onto_3D_plane(
         vertices_2D, image_size, image_real_height)
     return vertices_3D, vertex_indices_by_face
 
@@ -194,7 +195,7 @@ class ImageTrackingDemo():
             bgr_reference_image, (0, 0), None,
             reference_image_resize_factor,
             reference_image_resize_factor, cv2.INTER_CUBIC)
-        gray_reference_image = convert_to_gray(bgr_reference_image)
+        gray_reference_image = convert_bgr_to_gray(bgr_reference_image)
         reference_mask = numpy.empty_like(gray_reference_image)
 
         # Find keypoints and descriptors for multiple segments of
@@ -251,7 +252,7 @@ class ImageTrackingDemo():
 
         reference_points_2D = [keypoint.pt
                                for keypoint in reference_keypoints]
-        self._reference_points_3D = map_points_to_plane(
+        self._reference_points_3D = map_2D_points_onto_3D_plane(
             reference_points_2D, gray_reference_image.shape[::-1],
             reference_image_real_height)
 
@@ -282,7 +283,7 @@ class ImageTrackingDemo():
 
     def _track_object(self):
 
-        self._gray_image = convert_to_gray(
+        self._gray_image = convert_bgr_to_gray(
             self._bgr_image, self._gray_image)
 
         if self._mask is None:
