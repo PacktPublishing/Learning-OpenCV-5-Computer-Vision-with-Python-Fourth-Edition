@@ -71,6 +71,9 @@ cv2.createTrackbar('speckleRange', 'Disparity',
 cv2.createTrackbar('disp12MaxDiff', 'Disparity',
                    disp12MaxDiff, 250, update)
 
+# Initialize the disparity map. Show the disparity map and images.
+update()
+
 # Wait for the user to press any key.
 # Meanwhile, update() will be called anytime the user moves a slider.
 cv2.waitKey()
