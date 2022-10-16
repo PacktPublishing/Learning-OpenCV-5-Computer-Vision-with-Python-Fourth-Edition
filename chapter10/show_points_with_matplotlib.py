@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 model_path = '../3d_models/jburkardt/street_lamp.ply'
 
 vertices, normals = cv2.loadPointCloud(model_path)
-vertices = vertices.squeeze()
+vertices = vertices.squeeze(axis=1)
 
 xs = vertices[:,0]
 ys = vertices[:,2]
