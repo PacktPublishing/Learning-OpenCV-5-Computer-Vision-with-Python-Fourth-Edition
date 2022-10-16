@@ -9,6 +9,7 @@ model_path = '../3d_models/jburkardt/street_lamp.ply'
 vertices, normals = cv2.loadPointCloud(model_path)
 vertices = vertices.squeeze(axis=1)
 
+
 xs = vertices[:,0]
 ys = vertices[:,2]
 zs = vertices[:,1]
@@ -30,5 +31,6 @@ ax.set_box_aspect([max_x - min_x,
                    max_z - min_z])
 
 ax.scatter(xs, ys, zs)
+
 
 plt.show()

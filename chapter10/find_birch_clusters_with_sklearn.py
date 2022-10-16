@@ -15,6 +15,7 @@ clusterer = Birch(threshold=0.3, n_clusters=6)
 clusterer.fit(vertices)
 labels = clusterer.predict(vertices)
 
+
 xs = vertices[:,0]
 ys = vertices[:,2]
 zs = vertices[:,1]
@@ -36,5 +37,6 @@ ax.set_box_aspect([max_x - min_x,
                    max_z - min_z])
 
 ax.scatter(xs, ys, zs, c=labels)
+
 
 plt.show()

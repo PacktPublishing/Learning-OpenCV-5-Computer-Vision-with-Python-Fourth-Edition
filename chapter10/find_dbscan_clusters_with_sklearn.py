@@ -15,6 +15,7 @@ clusterer = DBSCAN(eps=0.3)
 clusterer.fit(vertices)
 labels = clusterer.labels_
 
+
 xs = vertices[:,0]
 ys = vertices[:,2]
 zs = vertices[:,1]
@@ -36,5 +37,6 @@ ax.set_box_aspect([max_x - min_x,
                    max_z - min_z])
 
 ax.scatter(xs, ys, zs, c=labels)
+
 
 plt.show()
