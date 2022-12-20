@@ -5,7 +5,7 @@ import depthai as dai
 import numpy as np
 
 
-odometryType = cv2.ODOMETRY_TYPE_DEPTH
+odometryType = cv2.ODOMETRY_TYPE_RGB_DEPTH
 odometrySettings = cv2.OdometrySettings()
 odometryAlgoType = cv2.ODOMETRY_ALGO_TYPE_COMMON
 odometry = cv2.Odometry(odometryType, odometrySettings, odometryAlgoType)
@@ -85,6 +85,8 @@ with dai.Device(pipeline) as device:
     rgbQ = device.getOutputQueue(
         name="rgb", maxSize=4, blocking=False)
 
+    lastBGRFrame = None
+    resizedDisparityFrame = None
     lastOdometryFrame = None
     while cv2.waitKey(1) == -1:
 
@@ -94,22 +96,35 @@ with dai.Device(pipeline) as device:
         # Grab the next RGB frame, if any is ready.
         rgbGrab = rgbQ.tryGet()
 
-        if disparityGrab is not None:
+        if rgbGrab is not None:
+            # Get the frame and convert it from its native NV12 encoding
+            # to OpenCV's BGR format.
+            lastBGRFrame = rgbGrab.getCvFrame()
+            cv2.imshow("RGB", lastBGRFrame)
+
+        if disparityGrab is not None and lastBGRFrame is not None:
+
             disparityFrame = disparityGrab.getFrame()
+            h, w = lastBGRFrame.shape[:2]
+            resizedDisparityFrame = cv2.resize(
+                disparityFrame, (w, h), resizedDisparityFrame)
+
+            # Invalid pixels have the value 0 in the disparity map.
+            mask = np.where(
+                resizedDisparityFrame == 0, 0, 255).astype(np.uint8)
+
+            odometryFrame = cv2.OdometryFrame(
+                resizedDisparityFrame, lastBGRFrame, mask)
+
             # Normalize the disparity map for better visualization.
             disparityFrame = (disparityFrame * \
                 (255.0 / depth.initialConfig.getMaxDisparity())).astype(np.uint8)
             cv2.imshow("disparity", disparityFrame)
 
-            odometryFrame = cv2.OdometryFrame(disparityFrame)
             if lastOdometryFrame is not None:
                 odometry.prepareFrames(lastOdometryFrame, odometryFrame)
-                Rt = odometry.compute(lastOdometryFrame, odometryFrame)
+                success, Rt = odometry.compute(
+                    lastOdometryFrame, odometryFrame)
+                print(success, Rt)
                 # TODO
             lastOdometryFrame = odometryFrame
-
-        if rgbGrab is not None:
-            # Get the frame and convert it from its native NV12 encoding
-            # to OpenCV's BGR format.
-            bgrFrame = rgbGrab.getCvFrame()
-            cv2.imshow("RGB", bgrFrame)
