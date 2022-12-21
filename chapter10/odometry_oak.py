@@ -1,8 +1,43 @@
 #!/usr/bin/env python
 
+import math
+
 import cv2
 import depthai as dai
 import numpy as np
+
+
+def showResult(Rt):
+
+    m00 = Rt[0, 0]
+    m02 = Rt[0, 2]
+    m10 = Rt[1, 0]
+    m11 = Rt[1, 1]
+    m12 = Rt[1, 2]
+    m20 = Rt[2, 0]
+    m22 = Rt[2, 2]
+
+    # Convert to Euler angles using the yaw-pitch-roll
+    # Tait-Bryan convention.
+    if m10 > 0.998:
+        # The rotation is near the "vertical climb" singularity.
+        pitch = 0.5 * math.pi
+        yaw = math.atan2(m02, m22)
+        roll = 0.0
+    elif m10 < -0.998:
+        # The rotation is near the "nose dive" singularity.
+        pitch = -0.5 * math.pi
+        yaw = math.atan2(m02, m22)
+        roll = 0.0
+    else:
+        pitch = math.asin(m10)
+        yaw = math.atan2(-m20, m00)
+        roll = math.atan2(-m12, m11)
+
+    eulerDegrees = np.rad2deg([pitch, yaw, roll])
+    position = Rt[:,3][:3]
+    print ('Euler angles (degrees):', eulerDegrees)
+    print ('Position:', position)
 
 
 odometryType = cv2.ODOMETRY_TYPE_RGB_DEPTH
@@ -88,6 +123,12 @@ with dai.Device(pipeline) as device:
     lastBGRFrame = None
     resizedDisparityFrame = None
     lastOdometryFrame = None
+
+    Rt = np.array([[1.0, 0.0, 0.0, 0.0],
+                   [0.0, 1.0, 0.0, 0.0],
+                   [0.0, 0.0, 1.0, 0.0],
+                   [0.0, 0.0, 0.0, 1.0]], dtype=np.float64)
+
     while cv2.waitKey(1) == -1:
 
         # Grab the next disparity frame, if any is ready.
@@ -123,8 +164,9 @@ with dai.Device(pipeline) as device:
 
             if lastOdometryFrame is not None:
                 odometry.prepareFrames(lastOdometryFrame, odometryFrame)
-                success, Rt = odometry.compute(
+                success, RtTemp = odometry.compute(
                     lastOdometryFrame, odometryFrame)
-                print(success, Rt)
-                # TODO
+                if success:
+                    cv2.gemm(Rt, RtTemp, 1.0, None, 0.0, Rt)
+                    showResult(Rt)
             lastOdometryFrame = odometryFrame
