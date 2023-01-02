@@ -7,7 +7,19 @@ import depthai as dai
 import numpy as np
 
 
-def showResult(Rt):
+def createCameraMatrix(w, h, diagonal_fov_degrees):
+    diagonal_image_size = (w ** 2.0 + h ** 2.0) ** 0.5
+    diagonal_fov_radians = \
+        diagonal_fov_degrees * math.pi / 180.0
+    focal_length = 0.5 * diagonal_image_size / math.tan(
+        0.5 * diagonal_fov_radians)
+    return np.array(
+        [[focal_length, 0.0, 0.5 * w],
+         [0.0, focal_length, 0.5 * h],
+         [0.0, 0.0, 1.0]], np.float32)
+
+
+def showResult(Rt, bgrFrame, disparityFrame):
 
     m00 = Rt[0, 0]
     m02 = Rt[0, 2]
@@ -36,12 +48,51 @@ def showResult(Rt):
 
     eulerDegrees = np.rad2deg([pitch, yaw, roll])
     position = Rt[:,3][:3]
-    print ('Euler angles (degrees):', eulerDegrees)
-    print ('Position:', position)
+
+    # Normalize the disparity map for better visualization.
+    disparityFrame = (disparityFrame * \
+        (255.0 / depth.initialConfig.getMaxDisparity())).astype(np.uint8)
+
+    # Apply false colorization to the disparity map.
+    disparityFrame = cv2.applyColorMap(
+        disparityFrame, cv2.COLORMAP_HOT)
+
+    # Blend the BGR frame and the colorized disparity map.
+    blendedFrame = cv2.addWeighted(
+        bgrFrame, 0.4, disparityFrame, 0.6, 0.0)
+
+    # Resize the blended frame for display.
+    blendedFrame = cv2.resize(blendedFrame, (960, 540))
+
+    # Print the odometry result on the blended frame.
+    textColor = (192, 64, 192)
+    cv2.putText(blendedFrame, 'yaw (deg.): %f' % eulerDegrees[0],
+                (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                textColor, 2)
+    cv2.putText(blendedFrame, 'pitch (deg.): %f' % eulerDegrees[1],
+                (5, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                textColor, 2)
+    cv2.putText(blendedFrame, 'roll (deg.): %f' % eulerDegrees[2],
+                (5, 85), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                textColor, 2)
+    cv2.putText(blendedFrame, 'x: %f' % position[0],
+                (5, 130), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                textColor, 2)
+    cv2.putText(blendedFrame, 'y: %f' % position[1],
+                (5, 160), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                textColor, 2)
+    cv2.putText(blendedFrame, 'z: %f' % position[2],
+                (5, 190), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                textColor, 2)
+
+    # Show the blended frame.
+    cv2.imshow("Result", blendedFrame)
 
 
 odometryType = cv2.ODOMETRY_TYPE_RGB_DEPTH
 odometrySettings = cv2.OdometrySettings()
+odometrySettings.setCameraMatrix(
+    createCameraMatrix(1920, 1080, 120.0))
 odometryAlgoType = cv2.ODOMETRY_ALGO_TYPE_COMMON
 odometry = cv2.Odometry(odometryType, odometrySettings, odometryAlgoType)
 
@@ -88,6 +139,9 @@ depth.setExtendedDisparity(False)
 #         incompatible with setExtendedDisparity(True)
 depth.setSubpixel(False)
 
+# Align the depth output to the RGB output.
+depth.setDepthAlign(dai.CameraBoardSocket.RGB)
+
 ####
 
 # Link the nodes in the mono -> stereo -> output chain.
@@ -121,7 +175,6 @@ with dai.Device(pipeline) as device:
         name="rgb", maxSize=4, blocking=False)
 
     lastBGRFrame = None
-    resizedDisparityFrame = None
     lastOdometryFrame = None
 
     Rt = np.array([[1.0, 0.0, 0.0, 0.0],
@@ -141,26 +194,17 @@ with dai.Device(pipeline) as device:
             # Get the frame and convert it from its native NV12 encoding
             # to OpenCV's BGR format.
             lastBGRFrame = rgbGrab.getCvFrame()
-            cv2.imshow("RGB", lastBGRFrame)
 
         if disparityGrab is not None and lastBGRFrame is not None:
 
             disparityFrame = disparityGrab.getFrame()
-            h, w = lastBGRFrame.shape[:2]
-            resizedDisparityFrame = cv2.resize(
-                disparityFrame, (w, h), resizedDisparityFrame)
 
             # Invalid pixels have the value 0 in the disparity map.
             mask = np.where(
-                resizedDisparityFrame == 0, 0, 255).astype(np.uint8)
+                disparityFrame == 0, 0, 255).astype(np.uint8)
 
             odometryFrame = cv2.OdometryFrame(
-                resizedDisparityFrame, lastBGRFrame, mask)
-
-            # Normalize the disparity map for better visualization.
-            disparityFrame = (disparityFrame * \
-                (255.0 / depth.initialConfig.getMaxDisparity())).astype(np.uint8)
-            cv2.imshow("disparity", disparityFrame)
+                disparityFrame, lastBGRFrame, mask)
 
             if lastOdometryFrame is not None:
                 odometry.prepareFrames(lastOdometryFrame, odometryFrame)
@@ -168,5 +212,5 @@ with dai.Device(pipeline) as device:
                     lastOdometryFrame, odometryFrame)
                 if success:
                     cv2.gemm(Rt, RtTemp, 1.0, None, 0.0, Rt)
-                    showResult(Rt)
+                    showResult(Rt, lastBGRFrame, disparityFrame)
             lastOdometryFrame = odometryFrame
