@@ -212,5 +212,5 @@ with dai.Device(pipeline) as device:
                     lastOdometryFrame, odometryFrame)
                 if success:
                     cv2.gemm(Rt, RtTemp, 1.0, None, 0.0, Rt)
-                    showResult(Rt, lastBGRFrame, disparityFrame)
+            showResult(Rt, lastBGRFrame, disparityFrame)
             lastOdometryFrame = odometryFrame
