@@ -19,7 +19,7 @@ def createCameraMatrix(w, h, diagonal_fov_degrees):
          [0.0, 0.0, 1.0]], np.float32)
 
 
-def showResult(Rt, bgrFrame, disparityFrame):
+def showResult(Rt, bgrFrame, depthFrame):
 
     m00 = Rt[0, 0]
     m02 = Rt[0, 2]
@@ -47,54 +47,59 @@ def showResult(Rt, bgrFrame, disparityFrame):
         roll = math.atan2(-m12, m11)
 
     eulerDegrees = np.rad2deg([pitch, yaw, roll])
-    position = Rt[:,3][:3]
+    translation = Rt[:,3][:3]
 
-    # Normalize the disparity map for better visualization.
-    disparityFrame = (disparityFrame * \
-        (255.0 / depth.initialConfig.getMaxDisparity())).astype(np.uint8)
+    # Scale the depth map for better visualization.
+    depthFrame = np.minimum(
+        255.0, (depthFrame / 40.0)).astype(np.uint8)
 
-    # Apply false colorization to the disparity map.
-    disparityFrame = cv2.applyColorMap(
-        disparityFrame, cv2.COLORMAP_HOT)
+    # Apply false colorization to the depth map.
+    depthFrame = cv2.applyColorMap(
+        depthFrame, cv2.COLORMAP_COOL)
 
-    # Blend the BGR frame and the colorized disparity map.
+    # Blend the BGR frame and the colorized depth map.
     blendedFrame = cv2.addWeighted(
-        bgrFrame, 0.4, disparityFrame, 0.6, 0.0)
+        bgrFrame, 0.7, depthFrame, 0.3, 0.0)
 
     # Resize the blended frame for display.
     blendedFrame = cv2.resize(blendedFrame, (960, 540))
 
     # Print the odometry result on the blended frame.
-    textColor = (192, 64, 192)
-    cv2.putText(blendedFrame, 'yaw (deg.): %f' % eulerDegrees[0],
+    textColor = (64, 192, 192)
+    cv2.putText(blendedFrame, 'yaw (degrees): %f' % eulerDegrees[0],
                 (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(blendedFrame, 'pitch (deg.): %f' % eulerDegrees[1],
+    cv2.putText(blendedFrame, 'pitch (degrees): %f' % eulerDegrees[1],
                 (5, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(blendedFrame, 'roll (deg.): %f' % eulerDegrees[2],
+    cv2.putText(blendedFrame, 'roll (degrees): %f' % eulerDegrees[2],
                 (5, 85), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(blendedFrame, 'x: %f' % position[0],
+    cv2.putText(blendedFrame, 'x (meters): %f' % translation[0],
                 (5, 130), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(blendedFrame, 'y: %f' % position[1],
+    cv2.putText(blendedFrame, 'y (meters): %f' % translation[1],
                 (5, 160), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(blendedFrame, 'z: %f' % position[2],
+    cv2.putText(blendedFrame, 'z (meters): %f' % translation[2],
                 (5, 190), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
 
     # Show the blended frame.
-    cv2.imshow("Result", blendedFrame)
+    cv2.imshow('Result', blendedFrame)
 
+
+w = 1920
+h = 1080
+diagonal_fov_degrees = 120.0
 
 odometryType = cv2.ODOMETRY_TYPE_RGB_DEPTH
 odometrySettings = cv2.OdometrySettings()
-odometrySettings.setCameraMatrix(
-    createCameraMatrix(1920, 1080, 120.0))
-odometryAlgoType = cv2.ODOMETRY_ALGO_TYPE_COMMON
-odometry = cv2.Odometry(odometryType, odometrySettings, odometryAlgoType)
+odometrySettings.setCameraMatrix(createCameraMatrix(
+    w, h, diagonal_fov_degrees))
+odometryAlgoType = cv2.ODOMETRY_ALGO_TYPE_FAST
+odometry = cv2.Odometry(
+    odometryType, odometrySettings, odometryAlgoType)
 
 
 # Create the pipeline.
@@ -105,8 +110,8 @@ pipeline = dai.Pipeline()
 monoLeft = pipeline.create(dai.node.MonoCamera)
 monoRight = pipeline.create(dai.node.MonoCamera)
 depth = pipeline.create(dai.node.StereoDepth)
-disparityOut = pipeline.create(dai.node.XLinkOut)
-disparityOut.setStreamName("disparity")
+depthOut = pipeline.create(dai.node.XLinkOut)
+depthOut.setStreamName('depth')
 
 # Configure the mono cameras.
 monoResolution = dai.MonoCameraProperties.SensorResolution.THE_400_P
@@ -147,19 +152,19 @@ depth.setDepthAlign(dai.CameraBoardSocket.RGB)
 # Link the nodes in the mono -> stereo -> output chain.
 monoLeft.out.link(depth.left)
 monoRight.out.link(depth.right)
-depth.disparity.link(disparityOut.input)
+depth.depth.link(depthOut.input)
 
 
 # Define the nodes in the RGB chain.
 rgb = pipeline.create(dai.node.ColorCamera)
 rgbOut = pipeline.create(dai.node.XLinkOut)
-rgbOut.setStreamName("rgb")
+rgbOut.setStreamName('rgb')
 
 # Configure the RGB camera.
 rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
 rgb.setResolution(
     dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-rgb.setVideoSize(1920, 1080)
+rgb.setVideoSize(w, h)
 
 # Link the nodes in the RGB -> output chain.
 rgb.video.link(rgbOut.input)
@@ -169,10 +174,10 @@ rgb.video.link(rgbOut.input)
 with dai.Device(pipeline) as device:
 
     # Get the output queues.
-    disparityQ = device.getOutputQueue(
-        name="disparity", maxSize=4, blocking=False)
+    depthQ = device.getOutputQueue(
+        name='depth', maxSize=4, blocking=False)
     rgbQ = device.getOutputQueue(
-        name="rgb", maxSize=4, blocking=False)
+        name='rgb', maxSize=4, blocking=False)
 
     lastBGRFrame = None
     lastOdometryFrame = None
@@ -184,8 +189,8 @@ with dai.Device(pipeline) as device:
 
     while cv2.waitKey(1) == -1:
 
-        # Grab the next disparity frame, if any is ready.
-        disparityGrab = disparityQ.tryGet()
+        # Grab the next depth frame, if any is ready.
+        depthGrab = depthQ.tryGet()
 
         # Grab the next RGB frame, if any is ready.
         rgbGrab = rgbQ.tryGet()
@@ -195,22 +200,40 @@ with dai.Device(pipeline) as device:
             # to OpenCV's BGR format.
             lastBGRFrame = rgbGrab.getCvFrame()
 
-        if disparityGrab is not None and lastBGRFrame is not None:
+        if depthGrab is not None and lastBGRFrame is not None:
 
-            disparityFrame = disparityGrab.getFrame()
+            depthFrame = depthGrab.getFrame()
 
-            # Invalid pixels have the value 0 in the disparity map.
+            # Invalid pixels have the value 0 in the depth map.
             mask = np.where(
-                disparityFrame == 0, 0, 255).astype(np.uint8)
+                depthFrame == 0, 0, 255).astype(np.uint8)
 
             odometryFrame = cv2.OdometryFrame(
-                disparityFrame, lastBGRFrame, mask)
+                depthFrame, lastBGRFrame, mask)
 
             if lastOdometryFrame is not None:
+
                 odometry.prepareFrames(lastOdometryFrame, odometryFrame)
                 success, RtTemp = odometry.compute(
                     lastOdometryFrame, odometryFrame)
+
                 if success:
-                    cv2.gemm(Rt, RtTemp, 1.0, None, 0.0, Rt)
-            showResult(Rt, lastBGRFrame, disparityFrame)
+
+                    # Get the 3x3 rotation submatrices
+                    # and 1x3 translation submatrices.
+                    rotation = Rt[:3,:3]
+                    translation = Rt[:,3][:3]
+                    rotationTemp = RtTemp[:3,:3]
+                    translationTemp = RtTemp[:,3][:3]
+
+                    # Update the translation.
+                    translation += cv2.gemm(
+                        rotation, translationTemp,
+                        1.0, None, 0.0).squeeze()
+
+                    # Update the rotation.
+                    cv2.gemm(rotation, rotationTemp,
+                        1.0, None, 0.0, rotation)
+
+            showResult(Rt, lastBGRFrame, depthFrame)
             lastOdometryFrame = odometryFrame

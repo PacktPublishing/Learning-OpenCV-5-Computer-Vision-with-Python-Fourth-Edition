@@ -46,34 +46,34 @@ def showResult(Rt, bgrFrame):
         roll = math.atan2(-m12, m11)
 
     eulerDegrees = np.rad2deg([pitch, yaw, roll])
-    position = Rt[:,3][:3]
+    translation = Rt[:,3][:3]
 
     # Resize the frame for display.
     resizedFrame = cv2.resize(bgrFrame, (960, 540))
 
     # Print the odometry result on the resized frame.
     textColor = (192, 64, 192)
-    cv2.putText(resizedFrame, 'yaw (deg.): %f' % eulerDegrees[0],
+    cv2.putText(resizedFrame, 'yaw (degrees): %f' % eulerDegrees[0],
                 (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(resizedFrame, 'pitch (deg.): %f' % eulerDegrees[1],
+    cv2.putText(resizedFrame, 'pitch (degrees): %f' % eulerDegrees[1],
                 (5, 55), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(resizedFrame, 'roll (deg.): %f' % eulerDegrees[2],
+    cv2.putText(resizedFrame, 'roll (degrees): %f' % eulerDegrees[2],
                 (5, 85), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(resizedFrame, 'x: %f' % position[0],
+    cv2.putText(resizedFrame, 'x (meters): %f' % translation[0],
                 (5, 130), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(resizedFrame, 'y: %f' % position[1],
+    cv2.putText(resizedFrame, 'y (meters): %f' % translation[1],
                 (5, 160), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
-    cv2.putText(resizedFrame, 'z: %f' % position[2],
+    cv2.putText(resizedFrame, 'z (meters): %f' % translation[2],
                 (5, 190), cv2.FONT_HERSHEY_SIMPLEX, 1,
                 textColor, 2)
 
     # Show the resized frame.
-    cv2.imshow("Result", resizedFrame)
+    cv2.imshow('Result', resizedFrame)
 
 
 w = 1280
@@ -105,11 +105,30 @@ while cv2.waitKey(1) == -1:
         continue
 
     odometryFrame = cv2.OdometryFrame(None, bgrFrame)
+
     if lastOdometryFrame is not None:
+
         odometry.prepareFrames(lastOdometryFrame, odometryFrame)
         success, RtTemp = odometry.compute(
             lastOdometryFrame, odometryFrame)
+
         if success:
-            cv2.gemm(Rt, RtTemp, 1.0, None, 0.0, Rt)
+
+            # Get the 3x3 rotation submatrices
+            # and 1x3 translation submatrices.
+            rotation = Rt[:3,:3]
+            translation = Rt[:,3][:3]
+            rotationTemp = RtTemp[:3,:3]
+            translationTemp = RtTemp[:,3][:3]
+
+            # Update the translation.
+            translation += cv2.gemm(
+                rotation, translationTemp,
+                1.0, None, 0.0).squeeze()
+
+            # Update the rotation.
+            cv2.gemm(rotation, rotationTemp,
+                1.0, None, 0.0, rotation)
+
     showResult(Rt, bgrFrame)
     lastOdometryFrame = odometryFrame

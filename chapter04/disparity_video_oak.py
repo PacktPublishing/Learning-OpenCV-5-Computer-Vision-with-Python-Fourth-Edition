@@ -12,7 +12,7 @@ monoLeft = pipeline.create(dai.node.MonoCamera)
 monoRight = pipeline.create(dai.node.MonoCamera)
 depth = pipeline.create(dai.node.StereoDepth)
 disparityOut = pipeline.create(dai.node.XLinkOut)
-disparityOut.setStreamName("disparity")
+disparityOut.setStreamName('disparity')
 
 # Configure the mono cameras.
 monoResolution = dai.MonoCameraProperties.SensorResolution.THE_400_P
@@ -56,7 +56,7 @@ depth.disparity.link(disparityOut.input)
 # Define the nodes in the RGB chain.
 rgb = pipeline.create(dai.node.ColorCamera)
 rgbOut = pipeline.create(dai.node.XLinkOut)
-rgbOut.setStreamName("rgb")
+rgbOut.setStreamName('rgb')
 
 # Configure the RGB camera.
 rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
@@ -73,9 +73,9 @@ with dai.Device(pipeline) as device:
 
     # Get the output queues.
     disparityQ = device.getOutputQueue(
-        name="disparity", maxSize=4, blocking=False)
+        name='disparity', maxSize=4, blocking=False)
     rgbQ = device.getOutputQueue(
-        name="rgb", maxSize=4, blocking=False)
+        name='rgb', maxSize=4, blocking=False)
 
     while cv2.waitKey(1) == -1:
 
@@ -90,10 +90,10 @@ with dai.Device(pipeline) as device:
             # Normalize the disparity map for better visualization.
             disparityFrame = (disparityFrame * \
                 (255.0 / depth.initialConfig.getMaxDisparity())).astype(np.uint8)
-            cv2.imshow("disparity", disparityFrame)
+            cv2.imshow('disparity', disparityFrame)
 
         if rgbGrab is not None:
             # Get the frame and convert it from its native NV12 encoding
             # to OpenCV's BGR format.
             bgrFrame = rgbGrab.getCvFrame()
-            cv2.imshow("RGB", bgrFrame)
+            cv2.imshow('RGB', bgrFrame)
