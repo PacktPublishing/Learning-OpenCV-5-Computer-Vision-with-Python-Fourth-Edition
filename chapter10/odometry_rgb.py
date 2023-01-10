@@ -18,6 +18,25 @@ def createCameraMatrix(w, h, diagonal_fov_degrees):
          [0.0, 0.0, 1.0]], np.float32)
 
 
+def accumulateResult(Rt, RtStep):
+
+    # Get the 3x3 rotation submatrices
+    # and 1x3 translation submatrices.
+    rotation = Rt[:3,:3]
+    translation = Rt[:,3][:3]
+    rotationStep = RtStep[:3,:3]
+    translationStep = RtStep[:,3][:3]
+
+    # Update the translation.
+    translation += cv2.gemm(
+        rotation, translationStep,
+        1.0, None, 0.0).squeeze()
+
+    # Update the rotation.
+    cv2.gemm(rotation, rotationStep,
+        1.0, None, 0.0, rotation)
+
+
 def showResult(Rt, bgrFrame):
 
     m00 = Rt[0, 0]
@@ -109,26 +128,11 @@ while cv2.waitKey(1) == -1:
     if lastOdometryFrame is not None:
 
         odometry.prepareFrames(lastOdometryFrame, odometryFrame)
-        success, RtTemp = odometry.compute(
+        success, RtStep = odometry.compute(
             lastOdometryFrame, odometryFrame)
 
         if success:
-
-            # Get the 3x3 rotation submatrices
-            # and 1x3 translation submatrices.
-            rotation = Rt[:3,:3]
-            translation = Rt[:,3][:3]
-            rotationTemp = RtTemp[:3,:3]
-            translationTemp = RtTemp[:,3][:3]
-
-            # Update the translation.
-            translation += cv2.gemm(
-                rotation, translationTemp,
-                1.0, None, 0.0).squeeze()
-
-            # Update the rotation.
-            cv2.gemm(rotation, rotationTemp,
-                1.0, None, 0.0, rotation)
+            accumulateResult(Rt, RtStep)
 
     showResult(Rt, bgrFrame)
     lastOdometryFrame = odometryFrame
