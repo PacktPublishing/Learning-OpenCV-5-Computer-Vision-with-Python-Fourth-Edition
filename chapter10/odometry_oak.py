@@ -121,7 +121,7 @@ monoRight.setResolution(monoResolution)
 monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
 ####
-# Configure the depth node for disparity output.
+# Configure the depth node for depth output.
 
 depth.setDefaultProfilePreset(
     dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
@@ -135,14 +135,6 @@ depth.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
 
 # True -> better occlusion handling
 depth.setLeftRightCheck(True)
-
-# True -> nearer minimum depth (max disparity = 190)
-# False -> farther minimum depth (max disparity = 95)
-depth.setExtendedDisparity(False)
-
-# True -> better accuracy at far depth, but
-#         incompatible with setExtendedDisparity(True)
-depth.setSubpixel(False)
 
 # Align the depth output to the RGB output.
 depth.setDepthAlign(dai.CameraBoardSocket.RGB)
