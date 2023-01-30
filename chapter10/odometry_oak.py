@@ -110,7 +110,7 @@ def showResult(Rt, bgrFrame, depthFrame):
 
 w = 1920
 h = 1080
-diagonal_fov_degrees = 120.0
+diagonal_fov_degrees = 81.0
 
 odometryType = cv2.ODOMETRY_TYPE_RGB_DEPTH
 odometrySettings = cv2.OdometrySettings()
