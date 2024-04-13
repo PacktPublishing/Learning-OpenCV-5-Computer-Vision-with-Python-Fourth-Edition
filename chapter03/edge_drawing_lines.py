@@ -22,8 +22,9 @@ lines = edge_drawing.detectLines()
 if lines is not None:
     lines = np.uint16(np.around(lines))
     for line in lines:
-        cv2.line(img, (line[0][0], line[0][1]),
-        (line[0][2], line[0][3]), (0, 255, 0), 2, cv2.LINE_AA)
+        line = line.squeeze()
+        cv2.line(img, (line[0], line[1]),
+        (line[2], line[3]), (0, 255, 0), 2, cv2.LINE_AA)
 
 cv2.imshow("Detected lines", img)
 cv2.waitKey()

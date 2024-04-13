@@ -8,7 +8,7 @@ from sklearn.cluster import DBSCAN
 
 model_path = '../3d_models/jburkardt/street_lamp.ply'
 
-vertices, normals = cv2.loadPointCloud(model_path)
+vertices, normals, rgb = cv2.loadPointCloud(model_path)
 vertices = vertices.squeeze(axis=1)
 
 clusterer = DBSCAN(eps=0.3)

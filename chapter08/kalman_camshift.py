@@ -64,15 +64,15 @@ while success:
 
     kalman.predict()
     box_points = cv2.boxPoints(rotated_rect)
-    box_points = np.int0(box_points)
+    box_points = np.intp(box_points)
     (cx, cy), radius = cv2.minEnclosingCircle(box_points)
-    center = np.array([cx, cy], np.float32)
+    center = np.array([[cx], [cy]], np.float32)
     estimate = kalman.correct(center)
     center_offset = estimate[:,0][:2] - center
 
     # Draw the tracking window.
-    track_window = (track_window[0] + int(center_offset[0]),
-                    track_window[1] + int(center_offset[1]),
+    track_window = (track_window[0] + int(center_offset[0][0]),
+                    track_window[1] + int(center_offset[1][0]),
                     track_window[2],
                     track_window[3])
     cv2.polylines(frame, [box_points], True, (255, 0, 0), 2)

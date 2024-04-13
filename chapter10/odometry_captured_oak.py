@@ -25,7 +25,7 @@ def accumulateResult(Rt, RtStep):
     rotation = Rt[:3,:3]
     translation = Rt[:,3][:3]
     rotationStep = RtStep[:3,:3]
-    translationStep = RtStep[:,3][:3]
+    translationStep = RtStep[:,3][:3].reshape(3, 1)
 
     # Update the translation.
     translation += cv2.gemm(

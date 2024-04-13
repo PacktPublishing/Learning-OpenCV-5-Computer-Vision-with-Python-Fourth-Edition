@@ -31,11 +31,12 @@ for segment in segments:
 # Draw the detected circles and ellipses.
 if ellipses is not None:
     for ellipse in ellipses:
-        center = (int(ellipse[0][0]), int(ellipse[0][1]))
-        axes = (int(ellipse[0][2] + ellipse[0][3]),
-                int(ellipse[0][2] + ellipse[0][4]))
-        angle = ellipse[0][5]
-        if ellipse[0][2] == 0:  # Ellipse
+        ellipse = ellipse.squeeze()
+        center = (int(ellipse[0]), int(ellipse[1]))
+        axes = (int(ellipse[2] + ellipse[3]),
+                int(ellipse[2] + ellipse[4]))
+        angle = ellipse[5]
+        if ellipse[2] == 0:  # Ellipse
             color = (0, 0, 255)
         else:  # Circle
             color = (0, 255, 0)

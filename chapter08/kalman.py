@@ -34,10 +34,13 @@ def on_mouse_moved(event, x, y, flags, param):
             [[x], [y], [0], [0]], np.float32)
         kalman.statePost = np.array(
             [[x], [y], [0], [0]], np.float32)
+        measurement = measurement.squeeze()
         prediction = measurement
     else:
         kalman.correct(measurement)
+        measurement = measurement.squeeze()
         prediction = kalman.predict()  # Gets a reference, not a copy
+        prediction = prediction.squeeze()
 
         # Trace the path of the measurement in green.
         cv2.line(img, (int(last_measurement[0]), int(last_measurement[1])),

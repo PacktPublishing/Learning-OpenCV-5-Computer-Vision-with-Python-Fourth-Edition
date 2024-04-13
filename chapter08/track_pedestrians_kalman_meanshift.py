@@ -54,13 +54,13 @@ class Pedestrian():
         ret, self.track_window = cv2.meanShift(
             back_proj, self.track_window, self.term_crit)
         x, y, w, h = self.track_window
-        center = np.array([x+w/2, y+h/2], np.float32)
+        center = np.array([[x+w/2], [y+h/2]], np.float32)
 
-        prediction = self.kalman.predict()
+        prediction = self.kalman.predict().squeeze()
         estimate = self.kalman.correct(center)
         center_offset = estimate[:,0][:2] - center
-        self.track_window = (x + int(center_offset[0]),
-                             y + int(center_offset[1]), w, h)
+        self.track_window = (x + int(center_offset[0][0]),
+                             y + int(center_offset[1][0]), w, h)
         x, y, w, h = self.track_window
 
         # Draw the predicted center position as a blue circle.
