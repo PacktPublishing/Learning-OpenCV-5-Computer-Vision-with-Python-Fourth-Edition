@@ -2,7 +2,7 @@ import cv2
 
 
 face_cascade = cv2.CascadeClassifier(
-    f'{cv2.data.haarcascades}haarcascade_frontalface_default.xml')
+    f'../data/haarcascades/haarcascade_frontalface_default.xml')
 img = cv2.imread('../images/woodcutters.jpg')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 faces = face_cascade.detectMultiScale(gray, 1.08, 5)

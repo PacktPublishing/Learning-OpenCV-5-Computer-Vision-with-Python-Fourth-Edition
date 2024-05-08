@@ -7,9 +7,9 @@ if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
 face_cascade = cv2.CascadeClassifier(
-    f'{cv2.data.haarcascades}haarcascade_frontalface_default.xml')
+    f'../data/haarcascades/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier(
-    f'{cv2.data.haarcascades}haarcascade_eye.xml')
+    f'../data/haarcascades/haarcascade_eye.xml')
 
 camera = cv2.VideoCapture(0)
 count = 0
