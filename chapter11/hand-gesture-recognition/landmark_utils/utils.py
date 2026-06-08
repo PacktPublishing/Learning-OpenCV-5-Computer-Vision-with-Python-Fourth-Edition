@@ -25,8 +25,8 @@ def calc_bounding_rect(image, landmarks):
 
 def log_csv(number, landmark_list):
     if number > 9 or number == -1:
-        pass
-    csv_path = csv_path = 'model/keypoint_classifier/keypoint.csv'
+        return
+    csv_path = 'model/keypoint_classifier/keypoint.csv'
     with open(csv_path, 'a', newline="") as f:
         writer = csv.writer(f)
         writer.writerow([number, *landmark_list])

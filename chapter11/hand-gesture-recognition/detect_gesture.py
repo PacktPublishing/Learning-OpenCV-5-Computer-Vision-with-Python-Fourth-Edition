@@ -56,7 +56,7 @@ with mp_hands.Hands(
         # Flip the image horizontally for a selfie-view display.
         final = cv2.flip(image, 1)
         cv2.putText(final, gestures[gesture_index],
-                    (10, 30), cv2.FONT_HERSHEY_DUPLEX, 1, 255)
+                    (10, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255))
         cv2.imshow('MediaPipe Hands', final)
         if cv2.waitKey(5) & 0xFF == 27:
             break
