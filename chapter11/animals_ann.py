@@ -24,7 +24,7 @@ def dog_class():
     return [1, 0, 0, 0]
 
 def condor_sample():
-    return [uniform(3.0, 10.0), randint(3.0, 5.0), 0]
+    return [uniform(3.0, 10.0), randint(3, 5), 0]
 
 def condor_class():
     return [0, 1, 0, 0]

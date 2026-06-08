@@ -25,7 +25,7 @@ def main():
                 # If loading a video, use 'break' instead of 'continue'.
                 continue
             receivedKey = cv2.waitKey(20)
-            number = receivedKey - 48
+            number = (receivedKey - 48) if receivedKey != -1 else -1
             # To improve performance, optionally mark the image as not writeable to
             # pass by reference.
             image.flags.writeable = False

@@ -1,5 +1,6 @@
 import json
 
+import numpy as np
 import pytest
 
 from hello_world import app
@@ -34,7 +35,7 @@ def apigw_event():
             },
             "stage": "prod",
         },
-        "queryStringParameters": {"foo": "bar"},
+        "queryStringParameters": {"url": "https://example.com/test.jpg"},
         "headers": {
             "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
             "Accept-Language": "en-US,en;q=0.8",
@@ -63,10 +64,13 @@ def apigw_event():
 
 
 def test_lambda_handler(apigw_event, mocker):
+    mock_response = mocker.MagicMock()
+    mock_response.content = b""
+    mocker.patch("hello_world.app.requests.get", return_value=mock_response)
+    mocker.patch("hello_world.app.cv2.imread", return_value=np.zeros((100, 100, 3), dtype=np.uint8))
 
     ret = app.lambda_handler(apigw_event, "")
     data = json.loads(ret["body"])
 
     assert ret["statusCode"] == 200
-    assert "message" in ret["body"]
-    assert data["message"] == "hello world"
+    assert "coords" in data
