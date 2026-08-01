@@ -41,7 +41,7 @@ while success:
 
     # Draw the tracking window.
     box_points = cv2.boxPoints(rotated_rect)
-    box_points = np.int0(box_points)
+    box_points = box_points.astype(int)
     cv2.polylines(frame, [box_points], True, (255, 0, 0), 2)
 
     cv2.imshow('back-projection', back_proj)
