@@ -135,15 +135,15 @@ depthOut.setStreamName('depth')
 # Configure the mono cameras.
 monoResolution = dai.MonoCameraProperties.SensorResolution.THE_400_P
 monoLeft.setResolution(monoResolution)
-monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
+monoLeft.setBoardSocket(dai.CameraBoardSocket.CAM_B)
 monoRight.setResolution(monoResolution)
-monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+monoRight.setBoardSocket(dai.CameraBoardSocket.CAM_C)
 
 ####
 # Configure the depth node for depth output.
 
 depth.setDefaultProfilePreset(
-    dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
+    dai.node.StereoDepth.PresetMode.DEFAULT)
 
 # Median filter options:
 #     MEDIAN_OFF
@@ -156,7 +156,7 @@ depth.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
 depth.setLeftRightCheck(True)
 
 # Align the depth output to the RGB output.
-depth.setDepthAlign(dai.CameraBoardSocket.RGB)
+depth.setDepthAlign(dai.CameraBoardSocket.CAM_A)
 
 ####
 
@@ -172,7 +172,7 @@ rgbOut = pipeline.create(dai.node.XLinkOut)
 rgbOut.setStreamName('rgb')
 
 # Configure the RGB camera.
-rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
+rgb.setBoardSocket(dai.CameraBoardSocket.CAM_A)
 rgb.setResolution(
     dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 rgb.setVideoSize(w, h)
