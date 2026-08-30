@@ -17,11 +17,11 @@ labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane',
           'tennis racket', 'bottle', 'wine glass', 'cup', 'fork',
           'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
           'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
-          'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
-          'dining table', 'toilet', 'tv', 'laptop', 'mouse',
-          'remote', 'keyboard', 'cell phone', 'microwave', 'oven',
-          'toaster', 'sink', 'refrigerator', 'book', 'clock',
-          'vase', 'scissors', 'teddy bear', 'hair drier',
+          'donut', 'cake', 'chair', 'sofa', 'potted plant', 'bed',
+          'dining table', 'toilet', 'TV or monitor', 'laptop',
+          'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
+          'oven', 'toaster', 'sink', 'refrigerator', 'book',
+          'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
           'toothbrush']
 
 
@@ -71,7 +71,7 @@ while success:
             # Draw the classification result and confidence.
             text = '%s (%.1f%%)' % (label, confidence * 100.0)
             cv2.putText(frame, text, (x0, y0 - 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
     cv2.imshow('Objects', frame)
 

@@ -49,14 +49,14 @@ while success:
             id = confidences.index(confidence)
             label = labels[id]
 
-            # Draw a blue rectangle around the object.
+            # Draw a blue rectangle around the face.
             cv2.rectangle(frame, (x0, y0), (x1, y1),
                           (255, 0, 0), 2)
 
             # Draw the classification result and confidence.
             text = '%s (%.1f%%)' % (label, confidence * 100.0)
             cv2.putText(frame, text, (x0, y0 - 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
     cv2.imshow('Faces and age', frame)
 
