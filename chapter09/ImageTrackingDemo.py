@@ -525,9 +525,9 @@ class ImageTrackingDemo():
 
     def _convert_euler_to_rodrigues(self):
 
-        pitch = self._euler_rotation_vector[0]
-        yaw = self._euler_rotation_vector[1]
-        roll = self._euler_rotation_vector[2]
+        pitch = self._euler_rotation_vector[0].item()
+        yaw = self._euler_rotation_vector[1].item()
+        roll = self._euler_rotation_vector[2].item()
 
         cyaw = math.cos(yaw)
         syaw = math.sin(yaw)

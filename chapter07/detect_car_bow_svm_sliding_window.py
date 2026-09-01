@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import os
 
+OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
+
 # When running in Jupyter, the `non_max_suppression_fast` function should
 # already be in the global scope. Otherwise, import it now.
 if 'non_max_suppression_fast' not in globals():
@@ -27,8 +29,16 @@ index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
 search_params = dict(checks=50)
 flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-bow_kmeans_trainer = cv2.BOWKMeansTrainer(BOW_NUM_CLUSTERS)
-bow_extractor = cv2.BOWImgDescriptorExtractor(sift, flann)
+if OPENCV_MAJOR_VERSION >= 5:
+    # OpenCV 5 or a later version is being used.
+    bow_kmeans_trainer = cv2.xfeatures2d.BOWKMeansTrainer(BOW_NUM_CLUSTERS)
+    bow_extractor = cv2.xfeatures2d.BOWImgDescriptorExtractor(sift, flann)
+else:
+    # OpenCV 4 or an earlier version is being used.
+    # cv2.BOWKMeansTrainer and cv2.BOWImgDescriptorExtractor are not in the
+    # xfeatures2d module.
+    bow_kmeans_trainer = cv2.BOWKMeansTrainer(BOW_NUM_CLUSTERS)
+    bow_extractor = cv2.BOWImgDescriptorExtractor(sift, flann)
 
 def get_pos_and_neg_paths(i):
     pos_path = 'CarData/TrainImages/pos-%d.pgm' % (i+1)

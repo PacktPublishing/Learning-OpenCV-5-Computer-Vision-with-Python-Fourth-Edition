@@ -17,15 +17,15 @@ disparityOut.setStreamName('disparity')
 # Configure the mono cameras.
 monoResolution = dai.MonoCameraProperties.SensorResolution.THE_400_P
 monoLeft.setResolution(monoResolution)
-monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
+monoLeft.setBoardSocket(dai.CameraBoardSocket.CAM_B)
 monoRight.setResolution(monoResolution)
-monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+monoRight.setBoardSocket(dai.CameraBoardSocket.CAM_C)
 
 ####
 # Configure the depth node for disparity output.
 
 depth.setDefaultProfilePreset(
-    dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
+    dai.node.StereoDepth.PresetMode.DEFAULT)
 
 # Median filter options:
 #     MEDIAN_OFF
@@ -59,7 +59,7 @@ rgbOut = pipeline.create(dai.node.XLinkOut)
 rgbOut.setStreamName('rgb')
 
 # Configure the RGB camera.
-rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
+rgb.setBoardSocket(dai.CameraBoardSocket.CAM_A)
 rgb.setResolution(
     dai.ColorCameraProperties.SensorResolution.THE_1080_P)
 rgb.setVideoSize(1920, 1080)
