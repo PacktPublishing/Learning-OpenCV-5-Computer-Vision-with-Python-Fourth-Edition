@@ -4,9 +4,6 @@ import numpy as np
 import digits_ann
 
 
-OPENCV_MAJOR_VERSION = int(cv2.__version__.split('.')[0])
-
-
 def inside(r1, r2):
     x1, y1, w1, h1 = r1
     x2, y2, w2, h2 = r2
@@ -65,17 +62,8 @@ ret, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
 erode_kernel = np.ones((2, 2), np.uint8)
 thresh = cv2.erode(thresh, erode_kernel, thresh, iterations=2)
 
-if OPENCV_MAJOR_VERSION >= 4:
-    # OpenCV 4 or a later version is being used.
-    contours, hier = cv2.findContours(thresh, cv2.RETR_TREE,
-                                      cv2.CHAIN_APPROX_SIMPLE)
-else:
-    # OpenCV 3 or an earlier version is being used.
-    # cv2.findContours has an extra return value.
-    # The extra return value is the thresholded image, which is
-    # unchanged, so we can ignore it.
-    _, contours, hier = cv2.findContours(thresh, cv2.RETR_TREE,
-                                         cv2.CHAIN_APPROX_SIMPLE)
+contours, hier = cv2.findContours(thresh, cv2.RETR_TREE,
+                                  cv2.CHAIN_APPROX_SIMPLE)
 
 rectangles = []
 

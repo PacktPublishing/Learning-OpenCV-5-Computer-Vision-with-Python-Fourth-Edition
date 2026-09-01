@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-model = cv2.dnn.readNetFromONNX('objects_data/yolo26n.onnx')
+model = cv2.dnn.readNetFromONNX('objects_data/yolo11n.onnx')
 blob_length = 640
 color_scale = 1.0/255.0
 confidence_threshold = 0.5
