@@ -10,7 +10,7 @@ def calc_bounding_rect(image, landmarks):
 
     landmark_array = np.empty((0, 2), int)
 
-    for _, landmark in enumerate(landmarks.landmark):
+    for landmark in landmarks:
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
 
@@ -25,8 +25,8 @@ def calc_bounding_rect(image, landmarks):
 
 def log_csv(number, landmark_list):
     if number > 9 or number == -1:
-        pass
-    csv_path = csv_path = 'model/keypoint_classifier/keypoint.csv'
+        return
+    csv_path = 'model/keypoint_classifier/keypoint.csv'
     with open(csv_path, 'a', newline="") as f:
         writer = csv.writer(f)
         writer.writerow([number, *landmark_list])
@@ -39,7 +39,7 @@ def calc_landmark_list(image, landmarks):
     landmark_point = []
 
     # Keypoint
-    for _, landmark in enumerate(landmarks.landmark):
+    for landmark in landmarks:
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
         # landmark_z = landmark.z
