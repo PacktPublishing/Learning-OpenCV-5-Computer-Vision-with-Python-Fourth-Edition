@@ -1,10 +1,11 @@
 FROM public.ecr.aws/lambda/python:3.13
 
-# Install OpenCV (headless – no GUI dependencies needed in Lambda)
-# and requests for downloading images from URLs
-RUN pip install opencv-python-headless requests
+# Install pinned dependencies from requirements.txt. The contrib build is
+# required under OpenCV 5 for cv2.CascadeClassifier.
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
 
-# Copy function code and Haar cascade classifier
+# Copy function code and Haar cascade classifier.
 COPY app.py cascade.xml ${LAMBDA_TASK_ROOT}/
 
 CMD ["app.lambda_handler"]

@@ -1,4 +1,5 @@
 import json
+from unittest.mock import MagicMock, mock_open
 
 import numpy as np
 import pytest
@@ -8,69 +9,69 @@ from hello_world import app
 
 @pytest.fixture()
 def apigw_event():
-    """ Generates API GW Event"""
-
     return {
-        "body": '{ "test": "body"}',
-        "resource": "/{proxy+}",
-        "requestContext": {
-            "resourceId": "123456",
-            "apiId": "1234567890",
-            "resourcePath": "/{proxy+}",
-            "httpMethod": "POST",
-            "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-            "accountId": "123456789012",
-            "identity": {
-                "apiKey": "",
-                "userArn": "",
-                "cognitoAuthenticationType": "",
-                "caller": "",
-                "userAgent": "Custom User Agent String",
-                "user": "",
-                "cognitoIdentityPoolId": "",
-                "cognitoIdentityId": "",
-                "cognitoAuthenticationProvider": "",
-                "sourceIp": "127.0.0.1",
-                "accountId": "",
-            },
-            "stage": "prod",
-        },
         "queryStringParameters": {"url": "https://example.com/test.jpg"},
-        "headers": {
-            "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-            "Accept-Language": "en-US,en;q=0.8",
-            "CloudFront-Is-Desktop-Viewer": "true",
-            "CloudFront-Is-SmartTV-Viewer": "false",
-            "CloudFront-Is-Mobile-Viewer": "false",
-            "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-            "CloudFront-Viewer-Country": "US",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Upgrade-Insecure-Requests": "1",
-            "X-Forwarded-Port": "443",
-            "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-            "X-Forwarded-Proto": "https",
-            "X-Amz-Cf-Id": "aaaaaaaaaae3VYQb9jd-nvCd-de396Uhbp027Y2JvkCPNLmGJHqlaA==",
-            "CloudFront-Is-Tablet-Viewer": "false",
-            "Cache-Control": "max-age=0",
-            "User-Agent": "Custom User Agent String",
-            "CloudFront-Forwarded-Proto": "https",
-            "Accept-Encoding": "gzip, deflate, sdch",
-        },
-        "pathParameters": {"proxy": "/examplepath"},
-        "httpMethod": "POST",
-        "stageVariables": {"baz": "qux"},
-        "path": "/examplepath",
     }
 
 
-def test_lambda_handler(apigw_event, mocker):
-    mock_response = mocker.MagicMock()
-    mock_response.content = b""
-    mocker.patch("hello_world.app.requests.get", return_value=mock_response)
-    mocker.patch("hello_world.app.cv2.imread", return_value=np.zeros((100, 100, 3), dtype=np.uint8))
+def test_lambda_handler(apigw_event, monkeypatch):
+    mock_response = MagicMock()
+    mock_response.headers = {
+        "Content-Type": "image/jpeg",
+        "Content-Length": "5",
+    }
+    mock_response.iter_content.return_value = [b"image"]
+    mock_response.raise_for_status.return_value = None
 
-    ret = app.lambda_handler(apigw_event, "")
+    mock_get = MagicMock(return_value=mock_response)
+    monkeypatch.setattr(app.requests, "get", mock_get)
+    monkeypatch.setattr("builtins.open", mock_open())
+    monkeypatch.setattr(
+        app.cv2,
+        "imread",
+        MagicMock(return_value=np.zeros((100, 100, 3), dtype=np.uint8)),
+    )
+    mock_cascade = MagicMock()
+    mock_cascade.detectMultiScale.return_value = np.array([[10, 20, 30, 40]])
+    monkeypatch.setattr(app, "cascade", mock_cascade)
+
+    ret = app.lambda_handler(apigw_event, None)
     data = json.loads(ret["body"])
 
     assert ret["statusCode"] == 200
-    assert "coords" in data
+    assert data == {"coords": [{"x": 10, "y": 20, "w": 30, "h": 40}]}
+    mock_get.assert_called_once_with(
+        "https://example.com/test.jpg",
+        timeout=app.DOWNLOAD_TIMEOUT,
+        stream=True,
+    )
+
+
+@pytest.mark.parametrize(
+    ("event", "expected_message"),
+    [
+        ({}, "missing required query string parameter 'url'"),
+        ({"queryStringParameters": None}, "missing required query string parameter 'url'"),
+        (
+            {"queryStringParameters": {"url": "file:///tmp/image.jpg"}},
+            "url must be an http(s) URL",
+        ),
+    ],
+)
+def test_lambda_handler_rejects_invalid_input(event, expected_message):
+    ret = app.lambda_handler(event, None)
+
+    assert ret["statusCode"] == 400
+    assert json.loads(ret["body"]) == {"error": expected_message}
+
+
+def test_lambda_handler_rejects_non_image(apigw_event, monkeypatch):
+    mock_response = MagicMock()
+    mock_response.headers = {"Content-Type": "text/html"}
+    mock_response.raise_for_status.return_value = None
+    monkeypatch.setattr(app.requests, "get", MagicMock(return_value=mock_response))
+
+    ret = app.lambda_handler(apigw_event, None)
+
+    assert ret["statusCode"] == 400
+    assert json.loads(ret["body"]) == {"error": "url did not return an image"}
