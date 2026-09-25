@@ -24,7 +24,7 @@ if lines is not None:
     for line in lines:
         line = line.squeeze()
         cv2.line(img, (line[0], line[1]),
-        (line[2], line[3]), (0, 255, 0), 2, cv2.LINE_AA)
+                 (line[2], line[3]), (0, 255, 0), 2, cv2.LINE_AA)
 
 cv2.imshow("Detected lines", img)
 cv2.waitKey()
