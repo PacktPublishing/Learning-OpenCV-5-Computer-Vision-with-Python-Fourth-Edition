@@ -10,7 +10,20 @@ Eg. do an "OK" hand in front of the webcam and press 0, move your hand around to
 
 Repeate the process for other gestures. In my example I generated data for Open hand (0), Thumb Up (1), OK (2) and Peace (3).
 
+Run the notebook from this directory so its relative data and model paths resolve correctly.
+For the modern Keras training workflow, use a separate Python environment with
+TensorFlow 2.20, NumPy, scikit-learn, and Jupyter; the optional confusion-matrix
+cell also uses pandas, seaborn, and matplotlib. The existing requirements.txt
+records the older webcam/MediaPipe stack and is not the environment for this
+updated notebook.
+
 You then run the classify_gestures.ipynb notebook with jupyter notebooks.
+Run its cells in order: training creates
+`model/keypoint_classifier/keypoint_classifier.keras` through the checkpoint
+callback before the load-model cell executes. The final cells save that model
+and generate `keypoint_classifier.tflite`, which the webcam classifier uses.
+The older `.hdf5` model is retained as a legacy artifact; do not rename it to
+`.keras`, because the formats differ.
 It will create and train a small neural network. Default is 4 classes but you can change that (but make sure to provide training data as well in the step above).
 
 Once you are done with generating training data and creating the classifier, you can test it with detect_gesture.py , the prediction will be dislayed in the top left corner.
