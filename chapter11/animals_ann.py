@@ -41,8 +41,15 @@ def dragon_sample():
 def dragon_class():
     return [0, 0, 0, 1]
 
+# Scale weight, length, and teeth using the maxima of our sample ranges.
+# Apply the same transform during training and prediction.
+def normalize_sample(sample):
+    return (np.array([sample], np.float32) /
+            np.array([1800.0, 40.0, 180.0], np.float32))
+
+
 def record(sample, classification):
-    return (np.array([sample], np.float32),
+    return (normalize_sample(sample),
             np.array([classification], np.float32))
 
 
@@ -70,7 +77,7 @@ TESTS = 100
 dog_results = 0
 for x in range(0, TESTS):
     clas = int(animals_net.predict(
-        np.array([dog_sample()], np.float32))[0])
+        normalize_sample(dog_sample()))[0])
     print("class: %d" % clas)
     if clas == 0:
         dog_results += 1
@@ -78,7 +85,7 @@ for x in range(0, TESTS):
 condor_results = 0
 for x in range(0, TESTS):
     clas = int(animals_net.predict(
-        np.array([condor_sample()], np.float32))[0])
+        normalize_sample(condor_sample()))[0])
     print("class: %d" % clas)
     if clas == 1:
         condor_results += 1
@@ -86,7 +93,7 @@ for x in range(0, TESTS):
 dolphin_results = 0
 for x in range(0, TESTS):
     clas = int(animals_net.predict(
-        np.array([dolphin_sample()], np.float32))[0])
+        normalize_sample(dolphin_sample()))[0])
     print("class: %d" % clas)
     if clas == 2:
         dolphin_results += 1
@@ -94,7 +101,7 @@ for x in range(0, TESTS):
 dragon_results = 0
 for x in range(0, TESTS):
     clas = int(animals_net.predict(
-        np.array([dragon_sample()], np.float32))[0])
+        normalize_sample(dragon_sample()))[0])
     print("class: %d" % clas)
     if clas == 3:
         dragon_results += 1

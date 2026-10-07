@@ -9,6 +9,35 @@ This project contains source code and supporting files for a serverless applicat
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
+## Files added for the OpenCV example
+
+The SAM Hello World skeleton is extended with these files:
+
+- `hello_world/cascade.xml`: the Haar cascade used by the face-detection function.
+  It is supplied in this repository and must be in `hello_world` before building,
+  because the Dockerfile copies it into the Lambda image.
+- `events/awsproxy.json`: an API Gateway proxy event containing the image `url`
+  query parameter. Replace the example URL with a reachable image URL before
+  using it to test face detection.
+
+When recreating the project with `sam init`, choose Python 3.13, the Image package
+type, and the x86_64 architecture. Decline optional X-Ray tracing and CloudWatch
+Application Insights monitoring for this introductory example. Prompt wording
+and order depend on the SAM CLI version. Copy the two added files from this
+chapter directory into the corresponding locations in your generated project.
+
+Build and test the face-detection version from this directory:
+
+```bash
+sam build --use-container
+sam local invoke HelloWorldFunction --event events/awsproxy.json
+```
+
+The Dockerfile installs the pinned dependencies from
+`hello_world/requirements.txt`. Build output varies with SAM and Docker versions
+and cache state; it should reflect that requirements-file installation rather
+than a separate hard-coded dependency list.
+
 ## Deploy the sample application
 
 The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
